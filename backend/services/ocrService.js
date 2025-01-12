@@ -1,4 +1,6 @@
 // backend/services/OcrService.js
+// This service will need to call the endpoint to get the extracted text.
+//Then, we will need to pull out the actual check data as json.
 class OcrService {
     constructor(apiKey, apiEndpoint) {
         this.apiKey = apiKey ||   process.env.OCR_API_KEY,

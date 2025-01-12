@@ -1,0 +1,57 @@
+# .github/workflows/deploy.yml
+name: Deploy
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '18'
+
+      # Create env files from GitHub secrets
+      - name: Create environment files
+        run: |
+          # Backend .env
+          echo "PORT=${{ secrets.BACKEND_PORT }}" >> backend/.env
+          echo "MONGODB_URI=${{ secrets.MONGODB_URI }}" >> backend/.env
+          echo "OCR_API_KEY=${{ secrets.OCR_API_KEY }}" >> backend/.env
+          echo "OCR_API_ENDPOINT=${{ secrets.OCR_API_ENDPOINT }}" >> backend/.env
+          
+          # Frontend .env
+          echo "VITE_API_URL=${{ secrets.VITE_API_URL }}" >> frontend/.env
+
+      - name: Install Dependencies
+        run: |
+          cd frontend
+          npm install
+          cd ../backend
+          npm install
+
+      - name: Build Frontend
+        run: |
+          cd frontend
+          npm run build
+
+      - name: Deploy to Server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            cd /path/to/deployment
+            git pull
+            docker compose -f docker-compose.prod.yml down
+            docker compose -f docker-compose.prod.yml build --no-cache
+            docker compose -f docker-compose.prod.yml up -d
+
+      - name: Cleanup
+        run: docker system prune -f
