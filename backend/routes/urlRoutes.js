@@ -5,6 +5,12 @@ const router = express.Router();
 const Url = require('../models/url');
 const limiter = require('../middleware/rateLimiter');
 
+// Example usage in your application code
+const OcrService = require('../services/OcrService');
+
+// Create an instance with specific configuration
+const ocrService = new OcrService();
+
 // Test endpoint
 router.get('/test', (req, res) => {
   res.json({ message: 'API is working!' });
