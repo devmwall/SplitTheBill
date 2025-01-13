@@ -7,10 +7,10 @@ command_exists() {
 
 # Function to determine which docker compose command to use
 get_docker_compose_cmd() {
-    if command_exists docker-compose; then
-        echo "docker-compose"
-    elif command_exists docker && docker compose version >/dev/null 2>&1; then
+    if command_exists docker && docker compose version >/dev/null 2>&1; then
         echo "docker compose"
+    elif command_exists docker-compose; then
+        echo "docker-compose"
     else
         echo ""
     fi
