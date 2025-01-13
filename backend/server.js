@@ -7,13 +7,20 @@ const urlRoutes = require('./routes/urlRoutes');
 
 const app = express();
 
-// CORS configuration
+// Updated CORS configuration
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://localhost:3000'], // Frontend URL
-  methods: ['GET', 'POST', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: false
+  origin: ['http://localhost:5173', 'http://localhost:3000'], // Remove the /upload path from origins
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Add other methods if needed
+  allowedHeaders: [
+    'Content-Type',
+    'Authorization',
+    'Origin',
+    'Accept',
+    'X-Requested-With'
+  ],
+  optionsSuccessStatus: 204
 }));
+
 
 // Parsing middleware
 app.use(express.json());
