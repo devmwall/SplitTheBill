@@ -1,6 +1,9 @@
 // backend/services/OcrService.js
 // This service will need to call the endpoint to get the extracted text.
 //Then, we will need to pull out the actual check data as json.
+import Tesseract from tesseract.js;
+
+
 class OcrService {
     constructor(apiKey, apiEndpoint) {
         this.apiKey = apiKey ||   process.env.OCR_API_KEY,
@@ -44,6 +47,20 @@ class OcrService {
             return this.processImage(imageBuffer);
         } catch (error) {
             console.error('Error fetching image from URL:', error);
+            throw error;
+        }
+    }
+
+    async processImageLocally(imagePath) {
+        try {
+            await (async () => {
+                const worker = await createWorker('eng');
+                const ret = await worker.recognize('https://tesseract.projectnaptha.com/img/eng_bw.png');
+                console.log(ret.data.text);
+                await worker.terminate();
+              })();
+        } catch (error) {
+            console.error('Error reading image file:', error);
             throw error;
         }
     }

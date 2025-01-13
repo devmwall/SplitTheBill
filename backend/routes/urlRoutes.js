@@ -6,7 +6,7 @@ const Url = require('../models/url');
 const limiter = require('../middleware/rateLimiter');
 
 // Example usage in your application code
-const OcrService = require('../services/OcrService');
+const OcrService = require('../services/ocrService');
 
 // Create an instance with specific configuration
 const ocrService = new OcrService();
@@ -65,6 +65,29 @@ router.get('/:shortCode', async (req, res) => {
     return res.status(404).json({ error: 'URL not found' });
   } catch (error) {
     console.error('Error in redirect:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+
+// Upload route
+router.post('/upload', upload.single('image'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+
+    // Here you can process the image, save file info to database, etc.
+    const fileUrl = `/uploads/${req.file.filename}`;
+
+    res.status(200).json({ 
+      success: true, 
+      fileUrl: fileUrl,
+      filename: req.file.filename
+    });
+
+  } catch (error) {
+    console.error('Error in upload:', error);
     res.status(500).json({ error: 'Server error' });
   }
 });
