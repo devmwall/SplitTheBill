@@ -98,6 +98,8 @@ router.get('/:shortCode', async (req, res) => {
 // Modified upload route with multer
 router.post('/upload', upload.single('image'), async (req, res) => {
   try {
+    console.log('Validating request...');
+
     // Check if there was a file validation error
     if (req.fileValidationError) {
       return res.status(400).json({ error: req.fileValidationError });

@@ -29,15 +29,17 @@ fi
 
 case "$1" in
     start)
-        $DOCKER_COMPOSE_CMD up -d
+        $DOCKER_COMPOSE_CMD build --no-cache
+        $DOCKER_COMPOSE_CMD compose up -d
         echo "Services started"
         ;;
     stop)
-        $DOCKER_COMPOSE_CMD down
+        $DOCKER_COMPOSE_CMD down -v
         echo "Services stopped"
         ;;
     restart)
-        $DOCKER_COMPOSE_CMD down
+        $DOCKER_COMPOSE_CMD down -v
+        $DOCKER_COMPOSE_CMD build --no-cache
         $DOCKER_COMPOSE_CMD up -d
         echo "Services restarted"
         ;;
