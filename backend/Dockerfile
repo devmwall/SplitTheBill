@@ -5,8 +5,8 @@ WORKDIR /usr/src/app
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies including devDependencies
-RUN npm install
+# Install dependencies with specific flags
+RUN npm install --production=false --legacy-peer-deps
 
 # Create uploads directory
 RUN mkdir -p uploads
@@ -14,14 +14,15 @@ RUN mkdir -p uploads
 # Copy source code
 COPY . .
 
-# Set correct permissions for uploads directory
-RUN chown -R node:node uploads
+# Debug: List contents after copy
+RUN ls -la && \
+    ls -la node_modules
 
-# Switch to non-root user
+# Set permissions
+RUN chown -R node:node .
+
 USER node
 
-# Expose port
 EXPOSE 3000
 
-# Use nodemon in development
 CMD ["npm", "run", "dev"]

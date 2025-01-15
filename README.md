@@ -179,7 +179,7 @@ jobs:
           script: |
             cd /path/to/deployment
             git pull
-            docker compose down
+            docker compose down -v
             docker compose build --no-cache
             docker compose up -d
 
