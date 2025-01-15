@@ -5,11 +5,20 @@ WORKDIR /usr/src/app
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
+# Install dependencies including devDependencies
 RUN npm install
+
+# Create uploads directory
+RUN mkdir -p uploads
 
 # Copy source code
 COPY . .
+
+# Set correct permissions for uploads directory
+RUN chown -R node:node uploads
+
+# Switch to non-root user
+USER node
 
 # Expose port
 EXPOSE 3000

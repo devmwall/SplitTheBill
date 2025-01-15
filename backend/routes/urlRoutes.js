@@ -1,14 +1,43 @@
 // backend/routes/urlRoutes.js
 const express = require('express');
 const { nanoid } = require('nanoid');
+const multer = require('multer');
+const path = require('path');
 const router = express.Router();
 const Url = require('../models/url');
 const limiter = require('../middleware/rateLimiter');
-
-// Example usage in your application code
 const OcrService = require('../services/ocrService');
 
-// Create an instance with specific configuration
+// Configure multer for file upload
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'uploads/'); // Make sure this directory exists
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + '-' + file.originalname);
+  }
+});
+
+// File filter function
+const fileFilter = (req, file, cb) => {
+  // Accept images only
+  if (!file.originalname.match(/\.(jpg|JPG|jpeg|JPEG|png|PNG|gif|GIF)$/)) {
+    req.fileValidationError = 'Only image files are allowed!';
+    return cb(new Error('Only image files are allowed!'), false);
+  }
+  cb(null, true);
+};
+
+// Configure multer with options
+const upload = multer({
+  storage: storage,
+  fileFilter: fileFilter,
+  limits: {
+    fileSize: 5 * 1024 * 1024 // 5MB max-size
+  }
+});
+
+// Create an OCR service instance
 const ocrService = new OcrService();
 
 // Test endpoint
@@ -18,17 +47,16 @@ router.get('/test', (req, res) => {
 
 // Shorten URL endpoint with error handling
 router.post('/shorten', limiter, async (req, res) => {
-  console.log('Received request:', req.body); // Debug log
-
+  console.log('Received request:', req.body);
   try {
     const { url } = req.body;
     
     if (!url) {
-      console.log('No URL provided'); // Debug log
+      console.log('No URL provided');
       return res.status(400).json({ error: 'URL is required' });
     }
 
-    console.log('Generating short code for:', url); // Debug log
+    console.log('Generating short code for:', url);
     const shortCode = nanoid(8);
     
     const newUrl = new Url({
@@ -36,18 +64,18 @@ router.post('/shorten', limiter, async (req, res) => {
       shortCode
     });
 
-    console.log('Saving to database...'); // Debug log
+    console.log('Saving to database...');
     await newUrl.save();
     
     const shortUrl = `${req.protocol}://${req.get('host')}/${shortCode}`;
-    console.log('Generated short URL:', shortUrl); // Debug log
+    console.log('Generated short URL:', shortUrl);
     
     res.json({
       shortUrl,
       originalUrl: url
     });
   } catch (error) {
-    console.error('Error in /shorten:', error); // Debug log
+    console.error('Error in /shorten:', error);
     res.status(500).json({ error: 'Server error', details: error.message });
   }
 });
@@ -57,11 +85,9 @@ router.get('/:shortCode', async (req, res) => {
   try {
     const { shortCode } = req.params;
     const url = await Url.findOne({ shortCode });
-
     if (url) {
       return res.redirect(url.originalUrl);
     }
-
     return res.status(404).json({ error: 'URL not found' });
   } catch (error) {
     console.error('Error in redirect:', error);
@@ -69,26 +95,28 @@ router.get('/:shortCode', async (req, res) => {
   }
 });
 
-
-// Modified upload route without multer
-router.post('/upload', async (req, res) => {
+// Modified upload route with multer
+router.post('/upload', upload.single('image'), async (req, res) => {
   try {
-    // Check if there's any file data in the request
-    if (!req.body || !req.files) {
+    // Check if there was a file validation error
+    if (req.fileValidationError) {
+      return res.status(400).json({ error: req.fileValidationError });
+    }
+
+    // Check if there's any file in the request
+    if (!req.file) {
       return res.status(400).json({ error: 'No file uploaded' });
     }
 
-    const file = req.files.image; // 'image' should match the FormData key from frontend
-    
     // Process the image using OCR service
-    const ocrResult = await ocrService.processImageLocally(file.data);
-
+    const ocrResult = await ocrService.processImageLocally(req.file.path);
+    
     res.status(200).json({
       success: true,
       ocrResult: ocrResult,
-      message: 'File processed successfully'
+      message: 'File processed successfully',
+      fileName: req.file.filename
     });
-
   } catch (error) {
     console.error('Error in upload:', error);
     res.status(500).json({ 
