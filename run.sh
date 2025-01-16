@@ -30,7 +30,7 @@ fi
 case "$1" in
     start)
         $DOCKER_COMPOSE_CMD build --no-cache
-        $DOCKER_COMPOSE_CMD compose up -d
+        $DOCKER_COMPOSE_CMD up -d
         echo "Services started"
         ;;
     stop)
