@@ -1,0 +1,106 @@
+{
+    "items": [
+      {
+        "name": "PET TOY",
+        "price": 1.97,
+        "quantity": 1
+      },
+      {
+        "name": "FLOPPY PUPPY",
+        "price": 1.97,
+        "quantity": 1
+      },
+      {
+        "name": "SSSUPREME S",
+        "price": 4.97,
+        "quantity": 1
+      },
+      {
+        "name": "2.5 SQUEAK",
+        "price": 5.92,
+        "quantity": 1
+      },
+      {
+        "name": "MUNCHY DMBEL",
+        "price": 3.77,
+        "quantity": 1
+      },
+      {
+        "name": "DOG TREAT",
+        "price": 2.92,
+        "quantity": 1
+      },
+      {
+        "name": "PED PCH 1",
+        "price": 0.5,
+        "quantity": 2
+      },
+      {
+        "name": "HNYMD SMORES",
+        "price": 3.98,
+        "quantity": 1
+      },
+      {
+        "name": "FRENCH DRSNG",
+        "price": 1.98,
+        "quantity": 1
+      },
+      {
+        "name": "3 ORANGES",
+        "price": 5.47,
+        "quantity": 1
+      },
+      {
+        "name": "BABY CARROTS",
+        "price": 1.48,
+        "quantity": 1
+      },
+      {
+        "name": "COLLARDS",
+        "price": 1.24,
+        "quantity": 1
+      },
+      {
+        "name": "CALZONE",
+        "price": 2.5,
+        "quantity": 1
+      },
+      {
+        "name": "MM RVW MNT",
+        "price": 19.77,
+        "quantity": 1
+      },
+      {
+        "name": "STKOBRLPLABL",
+        "price": 1.97,
+        "quantity": 2
+      },
+      {
+        "name": "STKO SUNFLWR",
+        "price": 0.97,
+        "quantity": 4
+      },
+      {
+        "name": "BLING BEADS",
+        "price": 0.97,
+        "quantity": 1
+      },
+      {
+        "name": "GREAT VALUE",
+        "price": 9.97,
+        "quantity": 1
+      },
+      {
+        "name": "LIPTON",
+        "price": 4.48,
+        "quantity": 1
+      },
+      {
+        "name": "DRY DOG",
+        "price": 12.44,
+        "quantity": 1
+      }
+    ],
+    "tax": 4.59,
+    "total": 98.21
+  }

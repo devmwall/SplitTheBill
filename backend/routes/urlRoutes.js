@@ -6,7 +6,7 @@ const path = require('path');
 const router = express.Router();
 const Url = require('../models/url');
 const limiter = require('../middleware/rateLimiter');
-const OcrService = require('../services/ocrService');
+const ReceiptService = require('../services/receiptService');
 
 // Configure multer for file upload
 const storage = multer.diskStorage({
@@ -36,9 +36,6 @@ const upload = multer({
     fileSize: 5 * 1024 * 1024 // 5MB max-size
   }
 });
-
-// Create an OCR service instance
-const ocrService = new OcrService();
 
 // Test endpoint
 router.get('/test', (req, res) => {
@@ -95,6 +92,22 @@ router.get('/:shortCode', async (req, res) => {
   }
 });
 
+
+function parseContent(content) {
+  // Remove the ```json and ``` markers
+  const cleanedContent = content.replace(/```json\n/, '').replace(/```$/, '');
+
+  // Parse the JSON string
+  try {
+      const parsed = JSON.parse(cleanedContent);
+      return parsed;
+  } catch (error) {
+      console.error("Failed to parse JSON:", error);
+      return null;
+  }
+}
+
+const receiptService = new ReceiptService();
 // Modified upload route with multer
 router.post('/upload', upload.single('image'), async (req, res) => {
   try {
@@ -110,12 +123,14 @@ router.post('/upload', upload.single('image'), async (req, res) => {
       return res.status(400).json({ error: 'No file uploaded' });
     }
 
-    // Process the image using OCR service
-    const ocrResult = await ocrService.processImageLocally(req.file.path);
+
+    const imageReturnObject = await receiptService.processImage(req.file);
+    const returnUrl = await receiptService.generateUrl(imageReturnObject);
+    
     
     res.status(200).json({
       success: true,
-      ocrResult: ocrResult,
+      ocrResult: imageReturnObject,
       message: 'File processed successfully',
       fileName: req.file.filename
     });

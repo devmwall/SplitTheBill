@@ -5,6 +5,7 @@ class OcrService {
     constructor(apiKey, apiEndpoint) {
         this.apiKey = apiKey || process.env.OCR_API_KEY;
         this.apiEndpoint = apiEndpoint || process.env.OCR_API_ENDPOINT;
+
     }
 
     async processImage(imageBuffer) {

@@ -1,24 +1,28 @@
-import React, { useState } from 'react'
-import UrlForm from './components/UrlForm'
-import UrlList from './components/UrlList'
-import UploadFile from './components/UploadFile'
-import ImageUploader from './components/ImageUploader'
-
+import React, { useState } from 'react';
+import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
+import RenderReceipt from './pages/RenderReceipt';
+import Main from './pages/Main';
 
 function App() {
-  const [urls, setUrls] = useState([])
+  const [urls, setUrls] = useState([]);
 
   const addUrl = (newUrl) => {
-    setUrls([newUrl, ...urls])
-  }
+    setUrls([newUrl, ...urls]);
+  };
 
   return (
-    <div className="container">
-      <h1>URL Shortener</h1>
-      <ImageUploader/>
-      <UrlList urls={urls} />
-    </div>
-  )
+    <Router>
+      <div className="container">
+\        <Routes>
+          <Route
+            path="/"
+            element={<Main />}
+          />
+          <Route path="/receipt/:id" element={<RenderReceipt />} />
+        </Routes>
+      </div>
+    </Router>
+  );
 }
 
-export default App
+export default App;
