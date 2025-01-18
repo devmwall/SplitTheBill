@@ -31,6 +31,8 @@ services:
       replicas: 2
     environment:
       - VITE_API_URL=${VITE_API_URL}
+      - VITE_BASE_URL=${VITE_BASE_URL}
+
 
   nginx:
     image: nginx:alpine

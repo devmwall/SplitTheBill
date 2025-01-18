@@ -7,13 +7,14 @@ const router = express.Router();
 const Url = require('../models/url');
 const limiter = require('../middleware/rateLimiter');
 const ReceiptService = require('../services/receiptService');
+const Receipt = require('../models/receipt');
 
 // Configure multer for file upload
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, 'uploads/'); // Make sure this directory exists
   },
-  filename: function (req, file, cb) {
+  filename: function (req, file, cb)  {
     cb(null, Date.now() + '-' + file.originalname);
   }
 });
@@ -40,6 +41,21 @@ const upload = multer({
 // Test endpoint
 router.get('/test', (req, res) => {
   res.json({ message: 'API is working!' });
+});
+
+///receiptData`
+router.get('/receiptData', (req, res) => {
+  try {
+    const { id } = req.query;
+    const receiptData = Receipt.findOne({ id });
+    if (receiptData) {
+      return res.json({"data":receiptData.receiptObject});
+    }
+    return res.status(404).json({ error: 'Receipt Data not found' });
+  } catch (error) {
+    console.error('Error in redirect:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
 });
 
 // Shorten URL endpoint with error handling
@@ -93,6 +109,8 @@ router.get('/:shortCode', async (req, res) => {
 });
 
 
+
+
 function parseContent(content) {
   // Remove the ```json and ``` markers
   const cleanedContent = content.replace(/```json\n/, '').replace(/```$/, '');
@@ -130,7 +148,7 @@ router.post('/upload', upload.single('image'), async (req, res) => {
     
     res.status(200).json({
       success: true,
-      ocrResult: imageReturnObject,
+      ocrResult: returnUrl,
       message: 'File processed successfully',
       fileName: req.file.filename
     });

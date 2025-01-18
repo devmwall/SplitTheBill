@@ -33,6 +33,10 @@ function shareButton(url) {
 
   const shareText = "Check out this great article!"; // Text to share
   return (
+    <div>
+    <a href={url}>Your rendered receipt</a>
+    <br></br>
+
     <button
 
       url={shareUrl}
@@ -50,7 +54,7 @@ function shareButton(url) {
       <span>Share via SMS</span>
 
     </button>
-
+    </div>
   )
 }
 

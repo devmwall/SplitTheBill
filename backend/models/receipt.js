@@ -1,16 +1,16 @@
 const mongoose = require('mongoose');
 
 const receiptSite = new mongoose.Schema({
-  guid: {
+  receiptId: {
     type: String,
     required: true,
     unique: true
   },
-  receipt: {
+  receiptObject: {
     type: Object,
     required: true,
   },
-  claims: {
+  receiptClaims: {
     type: Object,
     expires: 86400 // Automatically delete after 24 hours
   }

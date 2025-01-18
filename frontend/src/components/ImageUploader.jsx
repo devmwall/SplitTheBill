@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 
-const ImageUploader = () => {
+function ImageUploader ({onUrlAdded}) {
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [url, setUrl] = useState(null);
+
+
 
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
@@ -30,7 +33,10 @@ const ImageUploader = () => {
         }
       });
 
-      console.log('Upload successful:', response.data);
+      console.log("Here is data: " + response.data.ocrResult.receiptId)
+      const newReceipt = `/receipt/${response.data.ocrResult.receiptId}`
+      onUrlAdded(newReceipt);
+      setUrl('');
       // Handle successful upload (e.g., display uploaded image)
       
     } catch (err) {

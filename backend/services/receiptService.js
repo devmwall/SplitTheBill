@@ -4,7 +4,7 @@ const OcrService = require('../services/ocrService');
 const ChatGptService = require('../services/chatGptService');
 const importedObject = require('../testing.json')
 const { nanoid } = require('nanoid');
-
+const Receipt  = require('../models/receipt')
 
 class ReceiptService {
     constructor(){
@@ -27,7 +27,12 @@ class ReceiptService {
     //URL Will be test/nanoid
     async generateUrl(imageReturnObject){
         const urlKey = nanoid(10);
-        return 'test';
+        const receiptVal = new Receipt({
+            receiptId: urlKey,
+            receiptObject: imageReturnObject,
+            receiptClaims: null
+        })
+        return receiptVal;
     }
 
 
