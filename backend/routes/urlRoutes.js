@@ -44,14 +44,19 @@ router.get('/test', (req, res) => {
 });
 
 ///receiptData`
-router.get('/receiptData', (req, res) => {
+router.get('/receiptData', async (req, res) => {
   try {
     const { id } = req.query;
-    const receiptData = Receipt.findOne({ id });
+    console.log(id);
+    const allReceipts = await Receipt.find({});
+
+    console.log("All receipts in DB:", allReceipts);
+    const receiptData = await Receipt.findOne({ receiptId:id });
+    console.log(receiptData);
     if (receiptData) {
-      return res.json({"data":receiptData.receiptObject});
+      return res.json({message: receiptData.receiptObject});
     }
-    return res.status(404).json({ error: 'Receipt Data not found' });
+    return res.status(300).json({ error: 'Receipt Data not found' });
   } catch (error) {
     console.error('Error in redirect:', error);
     res.status(500).json({ error: 'Server error' });

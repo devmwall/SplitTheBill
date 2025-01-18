@@ -32,6 +32,7 @@ class ReceiptService {
             receiptObject: imageReturnObject,
             receiptClaims: null
         })
+        await receiptVal.save();
         return receiptVal;
     }
 
