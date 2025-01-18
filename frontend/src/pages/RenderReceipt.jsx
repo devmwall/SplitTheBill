@@ -2,13 +2,14 @@ import React, { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom';
 import UrlList from '../components/UrlList'
 import ImageUploader from '../components/ImageUploader'
+import MetadataForm from '../components/MetadataForm'
 import axios from 'axios';
 
 
 function RenderReceipt() {
   const [urls, setUrls] = useState([])
   const { id } = useParams();
-  const [jsonData, setData] = useState([])
+  const [jsonData, setData] = useState(null)
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -25,6 +26,7 @@ function RenderReceipt() {
             'Content-Type': 'application/json'
           }
         });
+        setData(response.data)
         
         console.log('Response:', response);
       } catch (error) {
@@ -44,6 +46,7 @@ function RenderReceipt() {
     <div className="container">
       <h1>Receipt</h1>
       <p>{id}</p>
+      {jsonData && <MetadataForm metadata={jsonData}/>}
     </div>
   )
 }

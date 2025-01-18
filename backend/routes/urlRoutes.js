@@ -54,7 +54,7 @@ router.get('/receiptData', async (req, res) => {
     const receiptData = await Receipt.findOne({ receiptId:id });
     console.log(receiptData);
     if (receiptData) {
-      return res.json({message: receiptData.receiptObject});
+      return res.json(receiptData.receiptObject);
     }
     return res.status(300).json({ error: 'Receipt Data not found' });
   } catch (error) {

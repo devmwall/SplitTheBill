@@ -4,16 +4,11 @@ import RenderReceipt from './pages/RenderReceipt';
 import Main from './pages/Main';
 
 function App() {
-  const [urls, setUrls] = useState([]);
-
-  const addUrl = (newUrl) => {
-    setUrls([newUrl, ...urls]);
-  };
 
   return (
     <Router>
       <div className="container">
-\        <Routes>
+        <Routes>
           <Route
             path="/"
             element={<Main />}
@@ -22,7 +17,7 @@ function App() {
         </Routes>
       </div>
     </Router>
-  );
+  ); 
 }
 
 export default App;

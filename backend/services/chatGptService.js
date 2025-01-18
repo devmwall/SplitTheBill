@@ -19,7 +19,7 @@ class ChatGptService {
             messages: [
                 {
                     "role": "developer",
-                    "content": "You are a receipt extraction assistant. Your task is to parse receipts and extract the following information in JSON format: 1) An array of all purchased items, where each item is an object with the fields 'name' and 'price'. If a quantity is present, include a 'quantity' field as well. 2) The 'tax' as a separate field with its amount. 3) The 'total' as a separate field with its amount."
+                    "content": "You are a receipt extraction assistant. Your task is to parse receipts and extract the following information in JSON format: 1) An array of all purchased items, where each item is an object with the fields 'name' and 'price'. If a quantity is present, include a 'quantity' field as well. 2) The 'tax' as a separate field with its amount. 3) The 'total' as a separate field with its amount. NOTE! If there are negative amounts or 'Coupons' include them as items that have negative prices."
                 },
                 {
                     "role": "user",
