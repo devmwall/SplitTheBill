@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const config = require('./config/config');
 const urlRoutes = require('./routes/urlRoutes');
+const claimRoutes = require('./routes/claimRoutes');
 
 const app = express();
 
@@ -28,6 +29,8 @@ app.use(express.urlencoded({ extended: true }));
 
 // Routes
 app.use('/', urlRoutes);
+app.use('/claims', claimRoutes);
+
 
 // Test endpoint
 app.get('/test', (req, res) => {

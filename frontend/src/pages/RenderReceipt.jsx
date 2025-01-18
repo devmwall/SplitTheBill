@@ -46,7 +46,7 @@ function RenderReceipt() {
     <div className="container">
       <h1>Receipt</h1>
       <p>{id}</p>
-      {jsonData && <MetadataForm metadata={jsonData}/>}
+      {jsonData && <MetadataForm id={id} metadata={jsonData}/>}
     </div>
   )
 }

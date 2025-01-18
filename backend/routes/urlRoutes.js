@@ -47,12 +47,8 @@ router.get('/test', (req, res) => {
 router.get('/receiptData', async (req, res) => {
   try {
     const { id } = req.query;
-    console.log(id);
-    const allReceipts = await Receipt.find({});
 
-    console.log("All receipts in DB:", allReceipts);
     const receiptData = await Receipt.findOne({ receiptId:id });
-    console.log(receiptData);
     if (receiptData) {
       return res.json(receiptData.receiptObject);
     }
