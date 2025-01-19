@@ -15,29 +15,30 @@ jobs:
         with:
           token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
 
-      - name: Log in to DO Container Registry
-        run: doctl registry login --expiry-seconds 1200
+      - name: Log in to DigitalOcean Container Registry
+        run: |
+          doctl registry login --expiry-seconds 3600
+          echo ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }} | docker login registry.digitalocean.com -u ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }} --password-stdin
 
-      - name: Build and tag images
+      - name: Build images
         env:
           REGISTRY: registry.digitalocean.com/${{ secrets.DIGITALOCEAN_REGISTRY }}
         run: |
           # Build backend image
-          docker build -t backend:latest ./backend
-          docker tag backend:latest $REGISTRY/backend:${{ github.sha }}
-          docker tag backend:latest $REGISTRY/backend:latest
+          docker build -t $REGISTRY/backend:${{ github.sha }} -t $REGISTRY/backend:latest ./backend
           
           # Build frontend image
-          docker build -t frontend:latest ./frontend
-          docker tag frontend:latest $REGISTRY/frontend:${{ github.sha }}
-          docker tag frontend:latest $REGISTRY/frontend:latest
+          docker build -t $REGISTRY/frontend:${{ github.sha }} -t $REGISTRY/frontend:latest ./frontend
 
-      - name: Push images to DO Registry
+      - name: Push images
         env:
           REGISTRY: registry.digitalocean.com/${{ secrets.DIGITALOCEAN_REGISTRY }}
         run: |
+          # Push backend images
           docker push $REGISTRY/backend:${{ github.sha }}
           docker push $REGISTRY/backend:latest
+          
+          # Push frontend images
           docker push $REGISTRY/frontend:${{ github.sha }}
           docker push $REGISTRY/frontend:latest
 
@@ -49,6 +50,9 @@ jobs:
           key: ${{ secrets.DROPLET_SSH_KEY }}
           script: |
             cd /opt/urlshortener
+            
+            # Login to DO registry on the droplet
+            echo ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }} | docker login registry.digitalocean.com -u ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }} --password-stdin
             
             # Update environment variables
             touch .env
