@@ -21,8 +21,8 @@ jobs:
       - name: Build and tag images
         run: |
           # Get directory name for Docker Compose default naming
-          COMPOSE_PROJECT_NAME=$(basename $(pwd))
-          
+          COMPOSE_PROJECT_NAME=$(basename $(pwd) | tr '[:upper:]' '[:lower:]')
+                    
           # Build images
           docker compose -f docker-compose.prod.yml build
           
