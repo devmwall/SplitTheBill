@@ -10,15 +10,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Install doctl
-        uses: digitalocean/action-doctl@v2
-        with:
-          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
-
+      # Add a specific step for Docker login
       - name: Log in to DigitalOcean Container Registry
-        run: |
-          doctl registry login --expiry-seconds 3600
-          echo ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }} | docker login registry.digitalocean.com -u ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }} --password-stdin
+        uses: docker/login-action@v3
+        with:
+          registry: registry.digitalocean.com
+          username: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+          password: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
 
       - name: Build images
         env:
@@ -35,47 +33,17 @@ jobs:
           REGISTRY: registry.digitalocean.com/${{ secrets.DIGITALOCEAN_REGISTRY }}
         run: |
           # Debug information
-          echo "Checking Docker login status..."
-          docker info
+          echo "Docker config location:"
+          ls -la ~/.docker/
+          cat ~/.docker/config.json
           
-          echo "Verifying images were built..."
-          docker images
-          
-          echo "Attempting to push to $REGISTRY"
-          
-          # Verify registry access
-          echo "Testing registry connection..."
-          curl -I https://registry.digitalocean.com/v2/
-          
-          # Force fresh authentication
-          echo "Refreshing authentication..."
-          echo ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }} | docker login registry.digitalocean.com -u ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }} --password-stdin
-          
-          echo "Pushing images..."
-          set -x  # Enable command printing
+          echo "Pushing images to $REGISTRY"
           
           # Push with error checking
-          if ! docker push $REGISTRY/backend:${{ github.sha }}; then
-            echo "Failed to push backend:${{ github.sha }}"
-            exit 1
-          fi
-          
-          if ! docker push $REGISTRY/backend:latest; then
-            echo "Failed to push backend:latest"
-            exit 1
-          fi
-          
-          if ! docker push $REGISTRY/frontend:${{ github.sha }}; then
-            echo "Failed to push frontend:${{ github.sha }}"
-            exit 1
-          fi
-          
-          if ! docker push $REGISTRY/frontend:latest; then
-            echo "Failed to push frontend:latest"
-            exit 1
-          fi
-          
-          echo "All pushes completed successfully"
+          docker push $REGISTRY/backend:${{ github.sha }}
+          docker push $REGISTRY/backend:latest
+          docker push $REGISTRY/frontend:${{ github.sha }}
+          docker push $REGISTRY/frontend:latest
 
       - name: Deploy to Droplet
         uses: appleboy/ssh-action@master
