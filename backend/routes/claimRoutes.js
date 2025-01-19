@@ -52,7 +52,11 @@ router.put('/:receiptId/:index', async (req, res) => {
     }
 
     if (!receipt.receiptClaims) {
-      receipt.receiptClaims = {};
+      receipt.receiptClaims = {
+        claims: {},
+        overrides: {},
+        calculateTax: false
+      };
     }
 
     // Update specific parts of the claims
@@ -76,54 +80,81 @@ router.put('/:receiptId/:index', async (req, res) => {
 
 // Toggle claim status
 router.post('/:receiptId/:index/toggle', async (req, res) => {
-    try {
-      const { receiptId, index } = req.params;
-      const { percentage } = req.body;
-  
-      const receipt = await Receipt.findOne({ receiptId });
-      if (!receipt) {
-        return res.status(404).json({ message: 'Receipt not found' });
-      }
-  
-      if (!receipt.receiptClaims) {
-        receipt.receiptClaims = { 
-          claims: {},
-          overrides: {},
-          calculateTax: false 
-        };
-      }
-  
-      // Ensure overrides object exists
-      receipt.receiptClaims.overrides = receipt.receiptClaims.overrides || {};
-      receipt.receiptClaims.claims = receipt.receiptClaims.claims || {};
-  
-      if (receipt.receiptClaims.claims[index]) {
-        // If unclaiming, maintain the overrides
-        delete receipt.receiptClaims.claims[index];
-      } else {
-        // If claiming, set both claim and ensure override percentage
-        receipt.receiptClaims.claims[index] = {
-          claimed: true,
-          percentage: percentage || 100
-        };
-        
-        // Keep existing overrides if any
-        receipt.receiptClaims.overrides[index] = {
-          ...(receipt.receiptClaims.overrides[index] || {}),
-          percentage: percentage || 100
-        };
-      }
-  
-      await receipt.save();
-      res.json({
-        claims: receipt.receiptClaims.claims,
-        overrides: receipt.receiptClaims.overrides,
-        calculateTax: receipt.receiptClaims.calculateTax
-      });
-    } catch (error) {
-      res.status(500).json({ message: 'Server error', error: error.message });
+  try {
+    const { receiptId, index } = req.params;
+    const { percentage } = req.body;
+    
+    // Validate input parameters
+    if (!receiptId || !index) {
+      return res.status(400).json({ message: 'Missing required parameters' });
     }
-  });
+
+    // Find and verify receipt exists
+    const receipt = await Receipt.findOne({ receiptId });
+    console.log("Receipt before modification: ", JSON.stringify(receipt, null, 2));
+    
+    if (!receipt) {
+      return res.status(404).json({ message: 'Receipt not found' });
+    }
+
+    // Initialize receiptClaims if it doesn't exist
+    console.log("receipt claims", receipt.receiptClaims);
+    if (!receipt.receiptClaims) {
+      receipt.receiptClaims = {
+        claims: {},
+        overrides: {},
+        calculateTax: false
+      };
+    }
+
+ 
+
+    // Ensure nested objects exist using MongoDB $set operator
+    receipt.markModified('receiptClaims');
+
+    // Handle claim toggle
+    if (receipt.receiptClaims.claims && receipt.receiptClaims.claims[index]) {
+            // If unclaiming, maintain the overrides but remove the claim
+      delete receipt.receiptClaims.claims[index];
+    } else {
+      // If claiming, set both claim and override percentage
+      const claimPercentage = percentage || 100;
+      
+      receipt.receiptClaims.claims[index] = {
+        claimed: true,
+        percentage: claimPercentage
+      };
+
+      receipt.receiptClaims.overrides[index] = {
+        ...(receipt.receiptClaims.overrides[index] || {}),
+        percentage: claimPercentage
+      };
+    }
+
+    console.log("Receipt before save: ", JSON.stringify(receipt, null, 2));
+    
+    // Explicitly mark the nested object as modified
+    receipt.markModified('receiptClaims.claims');
+    receipt.markModified('receiptClaims.overrides');
+    
+    // Save with validation
+    await receipt.save({ validateBeforeSave: true });
+
+    res.json({
+      claims: receipt.receiptClaims.claims,
+      overrides: receipt.receiptClaims.overrides,
+      calculateTax: receipt.receiptClaims.calculateTax
+    });
+
+  } catch (error) {
+    console.error('Error in toggle claim:', error);
+    res.status(500).json({ 
+      message: 'Server error', 
+      error: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
+  }
+});
 
 // Update tax calculation setting
 router.put('/:receiptId/tax/calculate', async (req, res) => {
@@ -137,7 +168,11 @@ router.put('/:receiptId/tax/calculate', async (req, res) => {
     }
 
     if (!receipt.receiptClaims) {
-      receipt.receiptClaims = {};
+      receipt.receiptClaims = {
+        claims: {},
+        overrides: {},
+        calculateTax: false
+      };
     }
 
     receipt.receiptClaims.calculateTax = calculateTax;

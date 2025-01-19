@@ -26,10 +26,10 @@ const MetadataForm = ({ id,metadata }) => {
       }
     };
 
-    if (metadata?.id) {
+    if (id) {
       loadClaims();
     }
-  }, [metadata?.id]);
+  }, [id]);
 
   const handleOverride = async (index, field, value) => {
     try {
