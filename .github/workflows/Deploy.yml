@@ -1,0 +1,68 @@
+name: Deploy to DigitalOcean
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install doctl
+        uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+
+      - name: Log in to DO Container Registry
+        run: doctl registry login --expiry-seconds 1200
+
+      - name: Build and tag images
+        run: |
+          # Build images with ChatGPT API key
+          CHAT_GPT_API_KEY=${{ secrets.CHAT_GPT_API_KEY }} docker compose -f docker-compose.prod.yml build
+
+          # Tag images for DO registry
+          docker tag urlshortener-backend:latest registry.digitalocean.com/${{ secrets.DIGITALOCEAN_REGISTRY }}/backend:${{ github.sha }}
+          docker tag urlshortener-backend:latest registry.digitalocean.com/${{ secrets.DIGITALOCEAN_REGISTRY }}/backend:latest
+          
+          docker tag urlshortener-frontend:latest registry.digitalocean.com/${{ secrets.DIGITALOCEAN_REGISTRY }}/frontend:${{ github.sha }}
+          docker tag urlshortener-frontend:latest registry.digitalocean.com/${{ secrets.DIGITALOCEAN_REGISTRY }}/frontend:latest
+
+      - name: Push images to DO Registry
+        run: |
+          # Push both tagged and latest versions
+          docker push registry.digitalocean.com/${{ secrets.DIGITALOCEAN_REGISTRY }}/backend:${{ github.sha }}
+          docker push registry.digitalocean.com/${{ secrets.DIGITALOCEAN_REGISTRY }}/backend:latest
+          
+          docker push registry.digitalocean.com/${{ secrets.DIGITALOCEAN_REGISTRY }}/frontend:${{ github.sha }}
+          docker push registry.digitalocean.com/${{ secrets.DIGITALOCEAN_REGISTRY }}/frontend:latest
+
+      - name: Deploy to Droplet
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.DROPLET_HOST }}
+          username: ${{ secrets.DROPLET_USERNAME }}
+          key: ${{ secrets.DROPLET_SSH_KEY }}
+          script: |
+            # Navigate to project directory
+            cd /opt/urlshortener
+
+            # Create .env file if it doesn't exist
+            touch .env
+
+            # Update environment variables
+            echo "MONGODB_URI=${{ secrets.MONGODB_URI }}" > .env
+            echo "OCR_API_KEY=${{ secrets.OCR_API_KEY }}" >> .env
+            echo "OCR_API_ENDPOINT=${{ secrets.OCR_API_ENDPOINT }}" >> .env
+            echo "VITE_API_URL=${{ secrets.VITE_API_URL }}" >> .env
+            echo "VITE_BASE_URL=${{ secrets.VITE_BASE_URL }}" >> .env
+            echo "DIGITALOCEAN_REGISTRY=${{ secrets.DIGITALOCEAN_REGISTRY }}" >> .env
+            echo "CHAT_GPT_API_KEY=${{ secrets.CHAT_GPT_API_KEY }}" >> .env
+
+            # Pull latest images
+            docker compose -f docker-compose.prod.yml pull
+
+            # Restart services with new environment
+            docker compose -f docker-compose.pro
