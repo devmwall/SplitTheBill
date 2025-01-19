@@ -19,27 +19,27 @@ jobs:
         run: doctl registry login --expiry-seconds 1200
 
       - name: Build and tag images
+        env:
+          REGISTRY: registry.digitalocean.com/${{ secrets.DIGITALOCEAN_REGISTRY }}
         run: |
-          # Get directory name for Docker Compose default naming
-          COMPOSE_PROJECT_NAME=$(basename $(pwd) | tr '[:upper:]' '[:lower:]')
-                    
-          # Build images
-          docker compose -f docker-compose.prod.yml build
+          # Build backend image
+          docker build -t backend:latest ./backend
+          docker tag backend:latest $REGISTRY/backend:${{ github.sha }}
+          docker tag backend:latest $REGISTRY/backend:latest
           
-          # Tag images using the correct names
-          docker tag ${COMPOSE_PROJECT_NAME}_backend:latest registry.digitalocean.com/${{ secrets.DIGITALOCEAN_REGISTRY }}/backend:${{ github.sha }}
-          docker tag ${COMPOSE_PROJECT_NAME}_backend:latest registry.digitalocean.com/${{ secrets.DIGITALOCEAN_REGISTRY }}/backend:latest
-          
-          docker tag ${COMPOSE_PROJECT_NAME}_frontend:latest registry.digitalocean.com/${{ secrets.DIGITALOCEAN_REGISTRY }}/frontend:${{ github.sha }}
-          docker tag ${COMPOSE_PROJECT_NAME}_frontend:latest registry.digitalocean.com/${{ secrets.DIGITALOCEAN_REGISTRY }}/frontend:latest
+          # Build frontend image
+          docker build -t frontend:latest ./frontend
+          docker tag frontend:latest $REGISTRY/frontend:${{ github.sha }}
+          docker tag frontend:latest $REGISTRY/frontend:latest
 
       - name: Push images to DO Registry
+        env:
+          REGISTRY: registry.digitalocean.com/${{ secrets.DIGITALOCEAN_REGISTRY }}
         run: |
-          docker push registry.digitalocean.com/${{ secrets.DIGITALOCEAN_REGISTRY }}/backend:${{ github.sha }}
-          docker push registry.digitalocean.com/${{ secrets.DIGITALOCEAN_REGISTRY }}/backend:latest
-          
-          docker push registry.digitalocean.com/${{ secrets.DIGITALOCEAN_REGISTRY }}/frontend:${{ github.sha }}
-          docker push registry.digitalocean.com/${{ secrets.DIGITALOCEAN_REGISTRY }}/frontend:latest
+          docker push $REGISTRY/backend:${{ github.sha }}
+          docker push $REGISTRY/backend:latest
+          docker push $REGISTRY/frontend:${{ github.sha }}
+          docker push $REGISTRY/frontend:latest
 
       - name: Deploy to Droplet
         uses: appleboy/ssh-action@master
