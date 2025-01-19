@@ -37,6 +37,7 @@ services:
       - ./nginx/conf.d:/etc/nginx/conf.d
       - ./certbot/conf:/etc/letsencrypt
       - ./certbot/www:/var/www/certbot
+      - /etc/letsencrypt:/etc/letsencrypt
       - nginx_logs:/var/log/nginx  # Add this line
     networks:
       - app-network

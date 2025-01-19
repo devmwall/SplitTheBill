@@ -42,7 +42,6 @@ router.post('/:receiptId', async (req, res) => {
 // Update specific claim
 router.put('/:receiptId/:index', async (req, res) => {
   try {
-    console.log("Updating CLIAM!")
     const { receiptId, index } = req.params;
     const updateData = req.body;
 
@@ -119,6 +118,10 @@ router.post('/:receiptId/:index/toggle', async (req, res) => {
     } else {
       // If claiming, set both claim and override percentage
       const claimPercentage = percentage || 100;
+
+      if(!receipt.receiptClaims.claims) {
+        receipt.receiptClaims.claims = {};
+      }
       
       receipt.receiptClaims.claims[index] = {
         claimed: true,
