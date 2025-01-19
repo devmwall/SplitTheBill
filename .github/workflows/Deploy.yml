@@ -34,13 +34,48 @@ jobs:
         env:
           REGISTRY: registry.digitalocean.com/${{ secrets.DIGITALOCEAN_REGISTRY }}
         run: |
-          # Push backend images
-          docker push $REGISTRY/backend:${{ github.sha }}
-          docker push $REGISTRY/backend:latest
+          # Debug information
+          echo "Checking Docker login status..."
+          docker info
           
-          # Push frontend images
-          docker push $REGISTRY/frontend:${{ github.sha }}
-          docker push $REGISTRY/frontend:latest
+          echo "Verifying images were built..."
+          docker images
+          
+          echo "Attempting to push to $REGISTRY"
+          
+          # Verify registry access
+          echo "Testing registry connection..."
+          curl -I https://registry.digitalocean.com/v2/
+          
+          # Force fresh authentication
+          echo "Refreshing authentication..."
+          echo ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }} | docker login registry.digitalocean.com -u ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }} --password-stdin
+          
+          echo "Pushing images..."
+          set -x  # Enable command printing
+          
+          # Push with error checking
+          if ! docker push $REGISTRY/backend:${{ github.sha }}; then
+            echo "Failed to push backend:${{ github.sha }}"
+            exit 1
+          fi
+          
+          if ! docker push $REGISTRY/backend:latest; then
+            echo "Failed to push backend:latest"
+            exit 1
+          fi
+          
+          if ! docker push $REGISTRY/frontend:${{ github.sha }}; then
+            echo "Failed to push frontend:${{ github.sha }}"
+            exit 1
+          fi
+          
+          if ! docker push $REGISTRY/frontend:latest; then
+            echo "Failed to push frontend:latest"
+            exit 1
+          fi
+          
+          echo "All pushes completed successfully"
 
       - name: Deploy to Droplet
         uses: appleboy/ssh-action@master
