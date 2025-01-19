@@ -20,19 +20,21 @@ jobs:
 
       - name: Build and tag images
         run: |
-          # Build images with ChatGPT API key
-          CHAT_GPT_API_KEY=${{ secrets.CHAT_GPT_API_KEY }} docker compose -f docker-compose.prod.yml build
-
-          # Tag images for DO registry
-          docker tag urlshortener-backend:latest registry.digitalocean.com/${{ secrets.DIGITALOCEAN_REGISTRY }}/backend:${{ github.sha }}
-          docker tag urlshortener-backend:latest registry.digitalocean.com/${{ secrets.DIGITALOCEAN_REGISTRY }}/backend:latest
+          # Get directory name for Docker Compose default naming
+          COMPOSE_PROJECT_NAME=$(basename $(pwd))
           
-          docker tag urlshortener-frontend:latest registry.digitalocean.com/${{ secrets.DIGITALOCEAN_REGISTRY }}/frontend:${{ github.sha }}
-          docker tag urlshortener-frontend:latest registry.digitalocean.com/${{ secrets.DIGITALOCEAN_REGISTRY }}/frontend:latest
+          # Build images
+          docker compose -f docker-compose.prod.yml build
+          
+          # Tag images using the correct names
+          docker tag ${COMPOSE_PROJECT_NAME}_backend:latest registry.digitalocean.com/${{ secrets.DIGITALOCEAN_REGISTRY }}/backend:${{ github.sha }}
+          docker tag ${COMPOSE_PROJECT_NAME}_backend:latest registry.digitalocean.com/${{ secrets.DIGITALOCEAN_REGISTRY }}/backend:latest
+          
+          docker tag ${COMPOSE_PROJECT_NAME}_frontend:latest registry.digitalocean.com/${{ secrets.DIGITALOCEAN_REGISTRY }}/frontend:${{ github.sha }}
+          docker tag ${COMPOSE_PROJECT_NAME}_frontend:latest registry.digitalocean.com/${{ secrets.DIGITALOCEAN_REGISTRY }}/frontend:latest
 
       - name: Push images to DO Registry
         run: |
-          # Push both tagged and latest versions
           docker push registry.digitalocean.com/${{ secrets.DIGITALOCEAN_REGISTRY }}/backend:${{ github.sha }}
           docker push registry.digitalocean.com/${{ secrets.DIGITALOCEAN_REGISTRY }}/backend:latest
           
@@ -46,13 +48,10 @@ jobs:
           username: ${{ secrets.DROPLET_USERNAME }}
           key: ${{ secrets.DROPLET_SSH_KEY }}
           script: |
-            # Navigate to project directory
             cd /opt/urlshortener
-
-            # Create .env file if it doesn't exist
-            touch .env
-
+            
             # Update environment variables
+            touch .env
             echo "MONGODB_URI=${{ secrets.MONGODB_URI }}" > .env
             echo "OCR_API_KEY=${{ secrets.OCR_API_KEY }}" >> .env
             echo "OCR_API_ENDPOINT=${{ secrets.OCR_API_ENDPOINT }}" >> .env
@@ -64,5 +63,8 @@ jobs:
             # Pull latest images
             docker compose -f docker-compose.prod.yml pull
 
-            # Restart services with new environment
-            docker compose -f docker-compose.pro
+            # Restart services
+            docker compose -f docker-compose.prod.yml up -d
+
+            # Clean up old images
+            docker image prune -f
