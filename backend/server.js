@@ -28,8 +28,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Routes
-app.use('/', urlRoutes);
-app.use('/claims', claimRoutes);
+app.use('/api/', urlRoutes);
+app.use('/api/claims', claimRoutes);
 
 
 // Test endpoint
