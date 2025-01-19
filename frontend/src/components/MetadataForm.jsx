@@ -53,6 +53,7 @@ const MetadataForm = ({ id,metadata }) => {
         };
         setClaims(newClaims);
 
+        if(field === 'percentage') return;
         // Save to backend
         await claimService.updateClaim(id, index, {
           overrides: newOverrides[index],
